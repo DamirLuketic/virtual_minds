@@ -15,7 +15,7 @@ func (ds *MariaDBDataStoreImpl) migrateCustomerData() {
 		if err != nil {
 			log.Fatalf("Error on inserting mockdata. Error: %s", err.Error())
 		}
-		log.Printf("Data for customer with id: %s created in DB", d.ID)
+		log.Printf("Data for customer with id: %d created in DB", d.ID)
 	}
 }
 
