@@ -4,8 +4,8 @@ import "log"
 
 func (ds *MariaDBDataStoreImpl) setMockData() {
 	ds.migrateCustomerData()
-	ds.migrateIPBlacklistData()
-	ds.migrateUABlacklistData()
+	ds.migrateIPBlackListData()
+	ds.migrateUABlackListData()
 }
 
 func (ds *MariaDBDataStoreImpl) migrateCustomerData() {
@@ -19,51 +19,55 @@ func (ds *MariaDBDataStoreImpl) migrateCustomerData() {
 	}
 }
 
-func (ds *MariaDBDataStoreImpl) migrateIPBlacklistData() {
+func (ds *MariaDBDataStoreImpl) migrateIPBlackListData() {
 	data := getIPBlacklistData()
 	for _, d := range data {
-		_, err := ds.CreateIPBlacklist(d)
+		_, err := ds.CreateIPBlackList(d)
 		if err != nil {
 			log.Fatalf("Error on inserting mockdata. Error: %s", err.Error())
 		}
-		log.Printf("Data for IPBlacklistData with IP: %s created in DB", d.IP)
+		log.Printf("Data for IPBlackListData with IP: %s created in DB", d.IP)
 	}
 }
 
-func (ds *MariaDBDataStoreImpl) migrateUABlacklistData() {
-	data := getUABlacklistData()
+func (ds *MariaDBDataStoreImpl) migrateUABlackListData() {
+	data := getUABlackListData()
 	for _, d := range data {
-		_, err := ds.CreateUABlacklist(d)
+		_, err := ds.CreateUABlackList(d)
 		if err != nil {
 			log.Fatalf("Error on inserting mockdata. Error: %s", err.Error())
 		}
-		log.Printf("Data for UABlacklist with UA: %s created in DB", d.UA)
+		log.Printf("Data for UABlackList with UA: %s created in DB", d.UA)
 	}
 }
 
 func getCustomerData() []Customer {
 	return []Customer{
 		{
+			UUID:   "72167dcf-3618-4af7-8815-ca51f3bb775a",
 			Name:   "Big News Media Corp",
 			Active: true,
 		},
 		{
+			UUID:   "c334dde1-4566-4ee2-b389-68cfff63c7d4",
 			Name:   "Online Mega Store",
 			Active: true,
 		},
 		{
+			UUID:   "b5676b7c-b430-4eaf-8c21-1e613f508b92",
 			Name:   "Nachoroo Delivery",
 			Active: false,
 		},
 		{
+			UUID:   "27e90d55-4194-4aea-81a6-7dc000ea1737",
 			Name:   "Euro Telecom Group",
 			Active: true,
 		},
 	}
 }
 
-func getIPBlacklistData() []IPBlacklist {
-	return []IPBlacklist{
+func getIPBlacklistData() []IPBlackList {
+	return []IPBlackList{
 		{
 			IP: "0",
 		},
@@ -76,8 +80,8 @@ func getIPBlacklistData() []IPBlacklist {
 	}
 }
 
-func getUABlacklistData() []UABlacklist {
-	return []UABlacklist{
+func getUABlackListData() []UABlackList {
+	return []UABlackList{
 		{
 			UA: "A6-Indexer",
 		},

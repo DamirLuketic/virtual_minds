@@ -2,9 +2,9 @@ package main
 
 import (
 	"github.com/DamirLuketic/virtual_minds/api/handler"
+	"github.com/DamirLuketic/virtual_minds/api/security"
 	"github.com/DamirLuketic/virtual_minds/config"
 	"github.com/DamirLuketic/virtual_minds/db"
-	"github.com/DamirLuketic/virtual_minds/security"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"

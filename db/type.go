@@ -8,7 +8,11 @@ type MariaDBDataStoreImpl struct {
 
 type DataStore interface {
 	CreateCustomer(customer Customer) (Customer, error)
-	CreateIPBlacklist(ipBlacklist IPBlacklist) (IPBlacklist, error)
-	CreateUABlacklist(uaBlacklist UABlacklist) (UABlacklist, error)
+	GetCustomerByUUID(uuid string) (Customer, error)
+	GetCustomers() ([]Customer, error)
+	CreateIPBlackList(ipBlackList IPBlackList) (IPBlackList, error)
+	GetIPBlackList() ([]IPBlackList, error)
+	CreateUABlackList(uaBlackList UABlackList) (UABlackList, error)
+	GetUABlackList() ([]UABlackList, error)
 	CreateHourlyStats(hourlyStats HourlyStats) (HourlyStats, error)
 }
