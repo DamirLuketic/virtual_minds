@@ -2,13 +2,13 @@ package db
 
 import "log"
 
-func (ds *MariaDBDataStore) setMockData() {
+func (ds *MariaDBDataStoreImpl) setMockData() {
 	ds.migrateCustomerData()
 	ds.migrateIPBlacklistData()
 	ds.migrateUABlacklistData()
 }
 
-func (ds *MariaDBDataStore) migrateCustomerData() {
+func (ds *MariaDBDataStoreImpl) migrateCustomerData() {
 	data := getCustomerData()
 	for _, d := range data {
 		_, err := ds.CreateCustomer(d)
@@ -19,7 +19,7 @@ func (ds *MariaDBDataStore) migrateCustomerData() {
 	}
 }
 
-func (ds *MariaDBDataStore) migrateIPBlacklistData() {
+func (ds *MariaDBDataStoreImpl) migrateIPBlacklistData() {
 	data := getIPBlacklistData()
 	for _, d := range data {
 		_, err := ds.CreateIPBlacklist(d)
@@ -30,7 +30,7 @@ func (ds *MariaDBDataStore) migrateIPBlacklistData() {
 	}
 }
 
-func (ds *MariaDBDataStore) migrateUABlacklistData() {
+func (ds *MariaDBDataStoreImpl) migrateUABlacklistData() {
 	data := getUABlacklistData()
 	for _, d := range data {
 		_, err := ds.CreateUABlacklist(d)

@@ -12,8 +12,8 @@ import (
 	"time"
 )
 
-func NewMariaDBDataStore(c *config.ServerConfig) *MariaDBDataStore {
-	ds := MariaDBDataStore{}
+func NewMariaDBDataStore(c *config.DBConfig) DataStore {
+	ds := MariaDBDataStoreImpl{}
 	var err error
 	dsn := getDSN(c)
 	createDB(c)
@@ -34,7 +34,7 @@ func NewMariaDBDataStore(c *config.ServerConfig) *MariaDBDataStore {
 	return &ds
 }
 
-func getDSN(c *config.ServerConfig) string {
+func getDSN(c *config.DBConfig) string {
 	cfg := mysqld.NewConfig()
 	cfg.DBName = c.MySQLDatabase
 	cfg.ParseTime = true
@@ -59,8 +59,8 @@ func connectRetryStrategy() retry.Strategy {
 	)
 }
 
-func createDB(c *config.ServerConfig) {
-	dataSource := fmt.Sprintf("%s:%s@tcp(db:%s)/", c.MySQLUser, c.APIPassword, c.MySQLPort)
+func createDB(c *config.DBConfig) {
+	dataSource := fmt.Sprintf("%s:%s@tcp(db:%s)/", c.MySQLUser, c.MySQLPassword, c.MySQLPort)
 	db, err := sql.Open("mysql", dataSource)
 	if err != nil {
 		log.Fatalf(err.Error())
@@ -86,7 +86,7 @@ func createDB(c *config.ServerConfig) {
 	}
 }
 
-func (ds *MariaDBDataStore) migrate() {
+func (ds *MariaDBDataStoreImpl) migrate() {
 	err := ds.db.Migrator().DropTable(&Customer{})
 	handleError(err)
 	err = ds.db.AutoMigrate(&Customer{})
