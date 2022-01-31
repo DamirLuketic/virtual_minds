@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/DamirLuketic/virtual_minds/api/handler"
 	"github.com/DamirLuketic/virtual_minds/api/security"
+	"github.com/DamirLuketic/virtual_minds/clients/request"
 	"github.com/DamirLuketic/virtual_minds/config"
 	"github.com/DamirLuketic/virtual_minds/db"
 	"github.com/gorilla/mux"
@@ -28,7 +29,8 @@ func configureServer(conf *config.Config) *http.Server {
 
 func newHandler(conf *config.Config) http.Handler {
 	mdb := db.NewMariaDBDataStore(conf.DBConfig)
-	handlers := handler.NewApiHandler(mdb, conf.ServerConfig)
+	requestClient := request.NewClient()
+	handlers := handler.NewApiHandler(mdb, requestClient, conf.ServerConfig)
 	router := mux.NewRouter()
 	appendMiddleware(router, conf)
 	apiSubRouter := router.PathPrefix("/api").Subrouter()

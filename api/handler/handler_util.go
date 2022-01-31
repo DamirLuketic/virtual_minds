@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"github.com/DamirLuketic/virtual_minds/clients/request"
 	"github.com/DamirLuketic/virtual_minds/config"
 	"github.com/DamirLuketic/virtual_minds/db"
 	"log"
@@ -8,22 +9,17 @@ import (
 	"time"
 )
 
-type APIHandler struct {
-	db          db.DataStore
-	APIUsername string
-	APIPassword string
-}
-
-func NewApiHandler(db db.DataStore, c *config.ServerConfig) APIHandler {
-	return APIHandler{
-		db:          db,
-		APIUsername: c.APIUser,
-		APIPassword: c.APIPassword,
+func NewApiHandler(db db.DataStore, requestClient request.Client, c *config.ServerConfig) APIHandler {
+	return &APIHandlerImpl{
+		DB:            db,
+		RequestClient: requestClient,
+		APIUsername:   c.APIUser,
+		APIPassword:   c.APIPassword,
 	}
 }
 
-func (h *APIHandler) isCustomerValid(customerID string) (bool, error) {
-	customers, err := h.db.GetCustomers()
+func (h *APIHandlerImpl) isCustomerValid(customerID string) (bool, error) {
+	customers, err := h.DB.GetCustomers()
 	if err != nil {
 		return false, err
 	}
@@ -35,7 +31,7 @@ func (h *APIHandler) isCustomerValid(customerID string) (bool, error) {
 	return false, nil
 }
 
-func (h *APIHandler) areIpAndUserAgentValid(ip, userAgent string) (bool, error) {
+func (h *APIHandlerImpl) areIpAndUserAgentValid(ip, userAgent string) (bool, error) {
 	ipValid, err := h.isIPValid(ip)
 	if ipValid == false || err != nil {
 		return false, err
@@ -47,8 +43,8 @@ func (h *APIHandler) areIpAndUserAgentValid(ip, userAgent string) (bool, error) 
 	return true, nil
 }
 
-func (h *APIHandler) isIPValid(ip string) (bool, error) {
-	ipBlackList, err := h.db.GetIPBlackList()
+func (h *APIHandlerImpl) isIPValid(ip string) (bool, error) {
+	ipBlackList, err := h.DB.GetIPBlackList()
 	if err != nil {
 		return false, err
 	}
@@ -60,8 +56,8 @@ func (h *APIHandler) isIPValid(ip string) (bool, error) {
 	return true, nil
 }
 
-func (h *APIHandler) isUserAgentValid(userAgent string) (bool, error) {
-	uaBlackList, err := h.db.GetUABlackList()
+func (h *APIHandlerImpl) isUserAgentValid(userAgent string) (bool, error) {
+	uaBlackList, err := h.DB.GetUABlackList()
 	if err != nil {
 		return false, err
 	}
@@ -73,26 +69,26 @@ func (h *APIHandler) isUserAgentValid(userAgent string) (bool, error) {
 	return true, nil
 }
 
-func (h *APIHandler) insertNotValidRequest(customerUUID string) {
+func (h *APIHandlerImpl) insertNotValidRequest(customerUUID string) {
 	customerID := h.getCustomerID(customerUUID)
 	hs := getNotValidRequestHourlyStatsEntity(&customerID)
-	_, err := h.db.CreateHourlyStats(*hs)
+	_, err := h.DB.CreateHourlyStats(*hs)
 	if err != nil {
 		log.Fatalf("APIHandler.insertNotValidRequest. Error: %s", ErrorOnInsertHourlyStats)
 	}
 }
 
-func (h *APIHandler) insertValidRequest(customerUUID string) {
+func (h *APIHandlerImpl) insertValidRequest(customerUUID string) {
 	customerID := h.getCustomerID(customerUUID)
 	hs := getValidRequestHourlyStatsEntity(&customerID)
-	_, err := h.db.CreateHourlyStats(*hs)
+	_, err := h.DB.CreateHourlyStats(*hs)
 	if err != nil {
 		log.Fatalf("APIHandler.insertValidRequest. Error: %s", ErrorOnInsertHourlyStats)
 	}
 }
 
-func (h *APIHandler) getCustomerID(customerUUID string) int64 {
-	customer, err := h.db.GetCustomerByUUID(customerUUID)
+func (h *APIHandlerImpl) getCustomerID(customerUUID string) int64 {
+	customer, err := h.DB.GetCustomerByUUID(customerUUID)
 	if err != nil {
 		log.Fatalf("APIHandler.getCustomerID. Error: %s", ErrorOnFetchingCustomerData)
 		return 0

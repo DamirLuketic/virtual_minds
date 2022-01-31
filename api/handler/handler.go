@@ -18,7 +18,7 @@ const (
 	ErrorOnInsertHourlyStats              = "error on insert hourly stats"
 )
 
-func (h *APIHandler) NewRequest(w http.ResponseWriter, r *http.Request) {
+func (h *APIHandlerImpl) NewRequest(w http.ResponseWriter, r *http.Request) {
 	bodyBytes, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -72,9 +72,9 @@ func (h *APIHandler) NewRequest(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	h.insertValidRequest(customerUUID)
-	// TODO: Implement rest
+	h.RequestClient.New(remoteIP, w, r)
 }
 
-func (h *APIHandler) CustomerByDayStatistics(w http.ResponseWriter, r *http.Request) {
+func (h *APIHandlerImpl) CustomerByDayStatistics(w http.ResponseWriter, r *http.Request) {
 	// TODO: Implement
 }
