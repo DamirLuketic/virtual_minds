@@ -41,8 +41,8 @@ func (ds *MariaDBDataStoreImpl) migrateUABlackListData() {
 	}
 }
 
-func getCustomerData() []Customer {
-	return []Customer{
+func getCustomerData() []*Customer {
+	return []*Customer{
 		{
 			UUID:   "72167dcf-3618-4af7-8815-ca51f3bb775a",
 			Name:   "Big News Media Corp",
@@ -66,8 +66,8 @@ func getCustomerData() []Customer {
 	}
 }
 
-func getIPBlacklistData() []IPBlackList {
-	return []IPBlackList{
+func getIPBlacklistData() []*IPBlackList {
+	return []*IPBlackList{
 		{
 			IP: "0",
 		},
@@ -80,8 +80,8 @@ func getIPBlacklistData() []IPBlackList {
 	}
 }
 
-func getUABlackListData() []UABlackList {
-	return []UABlackList{
+func getUABlackListData() []*UABlackList {
+	return []*UABlackList{
 		{
 			UA: "A6-Indexer",
 		},
