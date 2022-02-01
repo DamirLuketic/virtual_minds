@@ -4,15 +4,22 @@ import (
 	"github.com/DamirLuketic/virtual_minds/clients/request"
 	"github.com/DamirLuketic/virtual_minds/config"
 	"github.com/DamirLuketic/virtual_minds/db"
+	"github.com/DamirLuketic/virtual_minds/localtime"
 	"log"
 	"strings"
 	"time"
 )
 
-func NewApiHandler(db db.DataStore, requestClient request.Client, c *config.ServerConfig) APIHandler {
+func NewApiHandler(
+	db db.DataStore,
+	requestClient request.Client,
+	localTime localtime.Time,
+	c *config.ServerConfig,
+) APIHandler {
 	return &APIHandlerImpl{
 		DB:            db,
 		RequestClient: requestClient,
+		LocalTime:     localTime,
 		APIUsername:   c.APIUser,
 		APIPassword:   c.APIPassword,
 	}
@@ -71,8 +78,8 @@ func (h *APIHandlerImpl) isUserAgentValid(userAgent string) (bool, error) {
 
 func (h *APIHandlerImpl) insertNotValidRequest(customerUUID string) {
 	customerID := h.getCustomerID(customerUUID)
-	hs := getNotValidRequestHourlyStatsEntity(&customerID)
-	_, err := h.DB.CreateHourlyStats(*hs)
+	hs := h.getNotValidRequestHourlyStatsEntity(&customerID)
+	_, err := h.DB.UpdateOrCreateHourlyStats(hs)
 	if err != nil {
 		log.Fatalf("APIHandler.insertNotValidRequest. Error: %s", ErrorOnInsertHourlyStats)
 	}
@@ -80,8 +87,8 @@ func (h *APIHandlerImpl) insertNotValidRequest(customerUUID string) {
 
 func (h *APIHandlerImpl) insertValidRequest(customerUUID string) {
 	customerID := h.getCustomerID(customerUUID)
-	hs := getValidRequestHourlyStatsEntity(&customerID)
-	_, err := h.DB.CreateHourlyStats(*hs)
+	hs := h.getValidRequestHourlyStatsEntity(&customerID)
+	_, err := h.DB.UpdateOrCreateHourlyStats(hs)
 	if err != nil {
 		log.Fatalf("APIHandler.insertValidRequest. Error: %s", ErrorOnInsertHourlyStats)
 	}
@@ -96,23 +103,26 @@ func (h *APIHandlerImpl) getCustomerID(customerUUID string) int64 {
 	return customer.ID
 }
 
-func getValidRequestHourlyStatsEntity(customerID *int64) *db.HourlyStats {
+func (h *APIHandlerImpl) getValidRequestHourlyStatsEntity(customerID *int64) *db.HourlyStats {
 	return &db.HourlyStats{
 		CustomerID:   customerID,
-		Time:         getCurrentUTCTime(),
+		Time:         h.getCurrentUTCDate(),
 		RequestCount: 1,
 	}
 }
 
-func getNotValidRequestHourlyStatsEntity(customerID *int64) *db.HourlyStats {
+func (h *APIHandlerImpl) getNotValidRequestHourlyStatsEntity(customerID *int64) *db.HourlyStats {
 	return &db.HourlyStats{
 		CustomerID:   customerID,
-		Time:         getCurrentUTCTime(),
+		Time:         h.getCurrentUTCDate(),
 		InvalidCount: 1,
 	}
 }
 
-func getCurrentUTCTime() *time.Time {
-	currentTime := time.Now().UTC()
-	return &currentTime
+func (h *APIHandlerImpl) getCurrentUTCDate() *time.Time {
+	date, err := h.LocalTime.CurrentDateWithHour()
+	if err != nil {
+		log.Fatalf("APIHandler.getCurrentUTCDate. Error: %s", err.Error())
+	}
+	return date
 }

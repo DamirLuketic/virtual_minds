@@ -6,6 +6,7 @@ import (
 	"github.com/DamirLuketic/virtual_minds/clients/request"
 	"github.com/DamirLuketic/virtual_minds/config"
 	"github.com/DamirLuketic/virtual_minds/db"
+	"github.com/DamirLuketic/virtual_minds/localtime"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -30,7 +31,8 @@ func configureServer(conf *config.Config) *http.Server {
 func newHandler(conf *config.Config) http.Handler {
 	mdb := db.NewMariaDBDataStore(conf.DBConfig)
 	requestClient := request.NewClient()
-	handlers := handler.NewApiHandler(mdb, requestClient, conf.ServerConfig)
+	localTime := localtime.NewTime()
+	handlers := handler.NewApiHandler(mdb, requestClient, localTime, conf.ServerConfig)
 	router := mux.NewRouter()
 	appendMiddleware(router, conf)
 	apiSubRouter := router.PathPrefix("/api").Subrouter()

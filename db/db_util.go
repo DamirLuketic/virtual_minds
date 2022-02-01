@@ -18,7 +18,7 @@ func NewMariaDBDataStore(c *config.DBConfig) DataStore {
 	dsn := getDSN(c)
 	createDB(c)
 	for a := retry.Start(connectRetryStrategy(), nil); a.Next(); {
-		ds.db, err = gorm.Open(mysql.Open(dsn))
+		ds.DB, err = gorm.Open(mysql.Open(dsn))
 		if err == nil {
 			break
 		} else {
@@ -87,21 +87,21 @@ func createDB(c *config.DBConfig) {
 }
 
 func (ds *MariaDBDataStoreImpl) migrate() {
-	err := ds.db.Migrator().DropTable(&Customer{})
+	err := ds.DB.Migrator().DropTable(&Customer{})
 	handleError(err)
-	err = ds.db.AutoMigrate(&Customer{})
+	err = ds.DB.AutoMigrate(&Customer{})
 	handleError(err)
-	err = ds.db.Migrator().DropTable(&IPBlackList{})
+	err = ds.DB.Migrator().DropTable(&IPBlackList{})
 	handleError(err)
-	err = ds.db.AutoMigrate(&IPBlackList{})
+	err = ds.DB.AutoMigrate(&IPBlackList{})
 	handleError(err)
-	err = ds.db.Migrator().DropTable(&UABlackList{})
+	err = ds.DB.Migrator().DropTable(&UABlackList{})
 	handleError(err)
-	err = ds.db.AutoMigrate(&UABlackList{})
+	err = ds.DB.AutoMigrate(&UABlackList{})
 	handleError(err)
-	err = ds.db.Migrator().DropTable(&HourlyStats{})
+	err = ds.DB.Migrator().DropTable(&HourlyStats{})
 	handleError(err)
-	err = ds.db.AutoMigrate(&HourlyStats{})
+	err = ds.DB.AutoMigrate(&HourlyStats{})
 	handleError(err)
 }
 

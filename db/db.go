@@ -1,7 +1,7 @@
 package db
 
 func (ds *MariaDBDataStoreImpl) CreateCustomer(customer Customer) (Customer, error) {
-	re := ds.db.Create(&customer)
+	re := ds.DB.Create(&customer)
 	if re.Error != nil {
 		return customer, re.Error
 	}
@@ -9,7 +9,7 @@ func (ds *MariaDBDataStoreImpl) CreateCustomer(customer Customer) (Customer, err
 }
 
 func (ds *MariaDBDataStoreImpl) GetCustomerByUUID(uuid string) (customer Customer, err error) {
-	re := ds.db.Where("uuid = ?", uuid).First(&customer)
+	re := ds.DB.Where("uuid = ?", uuid).First(&customer)
 	if re.Error != nil {
 		return customer, re.Error
 	}
@@ -17,7 +17,7 @@ func (ds *MariaDBDataStoreImpl) GetCustomerByUUID(uuid string) (customer Custome
 }
 
 func (ds *MariaDBDataStoreImpl) GetCustomers() (customers []Customer, err error) {
-	re := ds.db.Find(&customers)
+	re := ds.DB.Find(&customers)
 	if re.Error != nil {
 		return customers, re.Error
 	}
@@ -25,7 +25,7 @@ func (ds *MariaDBDataStoreImpl) GetCustomers() (customers []Customer, err error)
 }
 
 func (ds *MariaDBDataStoreImpl) CreateIPBlackList(ipBlackList IPBlackList) (IPBlackList, error) {
-	re := ds.db.Create(&ipBlackList)
+	re := ds.DB.Create(&ipBlackList)
 	if re.Error != nil {
 		return ipBlackList, re.Error
 	}
@@ -33,7 +33,7 @@ func (ds *MariaDBDataStoreImpl) CreateIPBlackList(ipBlackList IPBlackList) (IPBl
 }
 
 func (ds *MariaDBDataStoreImpl) GetIPBlackList() (ipBlackList []IPBlackList, err error) {
-	re := ds.db.Find(&ipBlackList)
+	re := ds.DB.Find(&ipBlackList)
 	if re.Error != nil {
 		return ipBlackList, re.Error
 	}
@@ -41,7 +41,7 @@ func (ds *MariaDBDataStoreImpl) GetIPBlackList() (ipBlackList []IPBlackList, err
 }
 
 func (ds *MariaDBDataStoreImpl) CreateUABlackList(uaBlackList UABlackList) (UABlackList, error) {
-	re := ds.db.Create(&uaBlackList)
+	re := ds.DB.Create(&uaBlackList)
 	if re.Error != nil {
 		return uaBlackList, re.Error
 	}
@@ -49,7 +49,7 @@ func (ds *MariaDBDataStoreImpl) CreateUABlackList(uaBlackList UABlackList) (UABl
 }
 
 func (ds *MariaDBDataStoreImpl) GetUABlackList() (uaBlackList []UABlackList, err error) {
-	re := ds.db.Find(&uaBlackList)
+	re := ds.DB.Find(&uaBlackList)
 	if re.Error != nil {
 		return uaBlackList, re.Error
 	}
@@ -57,9 +57,35 @@ func (ds *MariaDBDataStoreImpl) GetUABlackList() (uaBlackList []UABlackList, err
 }
 
 func (ds *MariaDBDataStoreImpl) CreateHourlyStats(hourlyStats HourlyStats) (HourlyStats, error) {
-	re := ds.db.Create(&hourlyStats)
+	re := ds.DB.Create(&hourlyStats)
 	if re.Error != nil {
 		return hourlyStats, re.Error
 	}
 	return hourlyStats, nil
+}
+
+func (ds *MariaDBDataStoreImpl) UpdateOrCreateHourlyStats(hourlyStats *HourlyStats) (*HourlyStats, error) {
+	isValid := isRequestValid(hourlyStats)
+	hourlyStatsDB := &HourlyStats{}
+	err := ds.DB.
+		Where("customer_id = ? AND time = ?", *hourlyStats.CustomerID, *hourlyStats.Time).
+		First(hourlyStatsDB)
+	if err.Error != nil {
+		hs, err := ds.CreateHourlyStats(*hourlyStats)
+		return &hs, err
+	}
+	if isValid {
+		hourlyStatsDB.RequestCount++
+	} else {
+		hourlyStatsDB.InvalidCount++
+	}
+	err = ds.DB.Save(hourlyStatsDB)
+	return hourlyStatsDB, err.Error
+}
+
+func isRequestValid(hourlyStats *HourlyStats) bool {
+	if hourlyStats.RequestCount != 0 {
+		return true
+	}
+	return false
 }

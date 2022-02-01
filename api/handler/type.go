@@ -3,6 +3,7 @@ package handler
 import (
 	"github.com/DamirLuketic/virtual_minds/clients/request"
 	"github.com/DamirLuketic/virtual_minds/db"
+	"github.com/DamirLuketic/virtual_minds/localtime"
 	"net/http"
 )
 
@@ -14,6 +15,7 @@ type APIHandler interface {
 type APIHandlerImpl struct {
 	DB            db.DataStore
 	RequestClient request.Client
+	LocalTime     localtime.Time
 	APIUsername   string
 	APIPassword   string
 }

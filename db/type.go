@@ -3,7 +3,7 @@ package db
 import "gorm.io/gorm"
 
 type MariaDBDataStoreImpl struct {
-	db *gorm.DB
+	DB *gorm.DB
 }
 
 type DataStore interface {
@@ -15,4 +15,5 @@ type DataStore interface {
 	CreateUABlackList(uaBlackList UABlackList) (UABlackList, error)
 	GetUABlackList() ([]UABlackList, error)
 	CreateHourlyStats(hourlyStats HourlyStats) (HourlyStats, error)
+	UpdateOrCreateHourlyStats(hourlyStats *HourlyStats) (*HourlyStats, error)
 }
