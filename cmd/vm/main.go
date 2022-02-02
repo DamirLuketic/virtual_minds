@@ -37,7 +37,7 @@ func newHandler(conf *config.Config) http.Handler {
 	appendMiddleware(router, conf)
 	apiSubRouter := router.PathPrefix("/api").Subrouter()
 	apiSubRouter.HandleFunc("/new_request", handlers.NewRequest).Methods(http.MethodPost)
-	apiSubRouter.HandleFunc("/customer_statistic", handlers.CustomerByDayStatistics).Methods(http.MethodGet)
+	apiSubRouter.HandleFunc("/customer_statistic", handlers.CustomerPerDayStatistics).Methods(http.MethodGet)
 	return router
 }
 

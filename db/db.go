@@ -82,9 +82,10 @@ func (ds *MariaDBDataStoreImpl) UpdateOrCreateHourlyStats(hourlyStats *HourlySta
 	return hourlyStatsDB, err.Error
 }
 
-func isRequestValid(hourlyStats *HourlyStats) bool {
-	if hourlyStats.RequestCount != 0 {
-		return true
+func (ds *MariaDBDataStoreImpl) GetDailyCustomerHourlyStats(customerID *int64, date string) (hourlyStats []*HourlyStats, err error) {
+	re := ds.DB.Where("customer_id = ? AND time LIKE ?", *customerID, date+"%").Find(&hourlyStats)
+	if re.Error != nil {
+		return hourlyStats, re.Error
 	}
-	return false
+	return hourlyStats, nil
 }

@@ -110,3 +110,10 @@ func handleError(err error) {
 		log.Fatalln(err.Error())
 	}
 }
+
+func isRequestValid(hourlyStats *HourlyStats) bool {
+	if hourlyStats.RequestCount != 0 {
+		return true
+	}
+	return false
+}

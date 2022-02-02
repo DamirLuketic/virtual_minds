@@ -16,50 +16,52 @@ const (
 	ErrorIPorUAonBlackList                = "ip or userAgent on black list"
 	ErrorOnFetchingCustomerData           = "error on fetching customer data"
 	ErrorOnInsertHourlyStats              = "error on insert hourly stats"
+	ErrorMissingCustomerUUIDOrDate        = "missing customerUUID or date in query params"
+	ErrorNotValidDate                     = "date not valid"
 )
 
 func (h *APIHandlerImpl) NewRequest(w http.ResponseWriter, r *http.Request) {
 	bodyBytes, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		fmt.Errorf(ErrorMalformedRequestBody)
+		fmt.Println(ErrorMalformedRequestBody)
 		return
 	}
 	reqBody := Request{}
 	err = json.NewDecoder(bytes.NewReader(bodyBytes)).Decode(&reqBody)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Errorf(http.StatusText(http.StatusInternalServerError))
+		fmt.Println(http.StatusText(http.StatusInternalServerError))
 		return
 	}
 	customerUUID := reqBody.CustomerUUID
 	if customerUUID == "" {
 		w.WriteHeader(http.StatusBadRequest)
-		fmt.Errorf(ErrorMissingCustomerUUIDInRequestBody)
+		fmt.Println(ErrorMissingCustomerUUIDInRequestBody)
 		return
 	}
 	isCustomerValid, err := h.isCustomerValid(customerUUID)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Errorf(http.StatusText(http.StatusInternalServerError))
+		fmt.Println(http.StatusText(http.StatusInternalServerError))
 		return
 	}
 	if !isCustomerValid {
 		w.WriteHeader(http.StatusBadRequest)
-		fmt.Errorf(ErrorCustomerNotValid)
+		fmt.Println(ErrorCustomerNotValid)
 		return
 	}
 	remoteIP := reqBody.RemoteIP
 	if remoteIP == "" {
 		w.WriteHeader(http.StatusBadRequest)
-		fmt.Errorf(ErrorMissingRemoteIPInRequestBody)
+		fmt.Println(ErrorMissingRemoteIPInRequestBody)
 		return
 	}
 	userAgent := r.UserAgent()
 	isValid, err := h.areIpAndUserAgentValid(remoteIP, userAgent)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Errorf(http.StatusText(http.StatusInternalServerError))
+		fmt.Println(http.StatusText(http.StatusInternalServerError))
 		// Request inserted in DB,
 		// but to take into consideration that failure occurred due to internal error
 		h.insertNotValidRequest(customerUUID)
@@ -67,7 +69,7 @@ func (h *APIHandlerImpl) NewRequest(w http.ResponseWriter, r *http.Request) {
 	}
 	if !isValid {
 		w.WriteHeader(http.StatusBadRequest)
-		fmt.Errorf(ErrorIPorUAonBlackList)
+		fmt.Println(ErrorIPorUAonBlackList)
 		h.insertNotValidRequest(customerUUID)
 		return
 	}
@@ -75,6 +77,44 @@ func (h *APIHandlerImpl) NewRequest(w http.ResponseWriter, r *http.Request) {
 	h.RequestClient.New(remoteIP, w, r)
 }
 
-func (h *APIHandlerImpl) CustomerByDayStatistics(w http.ResponseWriter, r *http.Request) {
-	// TODO: Implement
+func (h *APIHandlerImpl) CustomerPerDayStatistics(w http.ResponseWriter, r *http.Request) {
+	queryParams := r.URL.Query()
+	customerUUID := queryParams.Get("customerUUID")
+	date := queryParams.Get("date")
+	if customerUUID == "" || date == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Println(ErrorMissingCustomerUUIDOrDate)
+		return
+	}
+	customerID := h.getCustomerID(customerUUID)
+	isCustomerValid, err := h.isCustomerValid(customerUUID)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Println(http.StatusText(http.StatusInternalServerError))
+		return
+	}
+	if !isCustomerValid {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Println(ErrorCustomerNotValid)
+		return
+	}
+	validDate, err := h.inspectDate(date)
+	if !isCustomerValid {
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Println(ErrorNotValidDate)
+		return
+	}
+	hourlyStats, err := h.DB.GetDailyCustomerHourlyStats(&customerID, validDate)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Println(http.StatusText(http.StatusInternalServerError))
+		return
+	}
+	response := countRequests(hourlyStats)
+	responseBody, _ := json.Marshal(response)
+	w.WriteHeader(http.StatusOK)
+	_, err = w.Write(responseBody)
+	if err != nil {
+		fmt.Printf("handler.CustomerByDayStatistics. error writing response. Error: %s", err.Error())
+	}
 }

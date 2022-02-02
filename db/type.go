@@ -1,6 +1,8 @@
 package db
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+)
 
 type MariaDBDataStoreImpl struct {
 	DB *gorm.DB
@@ -16,4 +18,5 @@ type DataStore interface {
 	GetUABlackList() ([]*UABlackList, error)
 	CreateHourlyStats(hourlyStats *HourlyStats) (*HourlyStats, error)
 	UpdateOrCreateHourlyStats(hourlyStats *HourlyStats) (*HourlyStats, error)
+	GetDailyCustomerHourlyStats(customerID *int64, date string) ([]*HourlyStats, error)
 }

@@ -9,7 +9,7 @@ import (
 
 type APIHandler interface {
 	NewRequest(w http.ResponseWriter, r *http.Request)
-	CustomerByDayStatistics(w http.ResponseWriter, r *http.Request)
+	CustomerPerDayStatistics(w http.ResponseWriter, r *http.Request)
 }
 
 type APIHandlerImpl struct {
@@ -23,4 +23,10 @@ type APIHandlerImpl struct {
 type Request struct {
 	CustomerUUID string `json:"customerUUID"`
 	RemoteIP     string `json:"remoteIP"`
+}
+
+type HourlyStatsResponse struct {
+	ValidRequests    int64 `json:"valid_requests"`
+	NotValidRequests int64 `json:"not_valid_requests"`
+	TotalRequests    int64 `json:"total_requests"`
 }
