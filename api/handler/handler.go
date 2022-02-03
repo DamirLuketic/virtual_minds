@@ -20,6 +20,17 @@ const (
 	ErrorNotValidDate                     = "date not valid"
 )
 
+// NewRequest godoc
+// @Summary Handle Request
+// @Description Handle Request
+// @Tags Request
+// @Produce
+// @Success 200
+// @Failure 400 "Bad request"
+// @Failure 401 "Unauthorized"
+// @Failure 500 "Internal server error"
+// @Router /api/new_request
+// @Param command body Request
 func (h *APIHandlerImpl) NewRequest(w http.ResponseWriter, r *http.Request) {
 	bodyBytes, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -77,6 +88,18 @@ func (h *APIHandlerImpl) NewRequest(w http.ResponseWriter, r *http.Request) {
 	h.RequestClient.New(remoteIP, w, r)
 }
 
+// CustomerPerDayStatistics godoc
+// @Summary Get customers statistic for selected day
+// @Description Get customers statistic for selected day
+// @Tags Statistic
+// @Produce HourlyStatsResponse
+// @Param customerUUID query string true "Customer UUID"
+// @Param date query string true "Requested statistics date. Format YYYY-MM-DD"
+// @Success 200
+// @Failure 400 "Bad request"
+// @Failure 401 "Unauthorized"
+// @Failure 500 "Internal server error"
+// @Router /api/customer_statistic
 func (h *APIHandlerImpl) CustomerPerDayStatistics(w http.ResponseWriter, r *http.Request) {
 	queryParams := r.URL.Query()
 	customerUUID := queryParams.Get("customerUUID")
